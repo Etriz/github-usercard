@@ -87,7 +87,7 @@ const createCard = ({ avatar_url, name, login, location, html_url, followers, fo
   userImg.src = avatar_url;
   userName.textContent = name;
   userLogin.textContent = login;
-  userLocation.textContent = `Location:${location}`;
+  userLocation.textContent = `Location: ${location}`;
   // profile.textContent = `Profile: `;
   link.href = html_url;
   link.textContent = html_url;
@@ -98,23 +98,34 @@ const createCard = ({ avatar_url, name, login, location, html_url, followers, fo
   return card;
 };
 
+const user = "etriz";
 const cardsEntry = document.querySelector(".cards");
 const getData = axios
-  .get("https://api.github.com/users/etriz/following")
+  .get(`https://api.github.com/users/${user}`)
   .then(res => {
-    const data = res.data;
-    // console.log("data", data);
-    data.forEach(user => {
-      followersArray.push(user.login);
-    });
-    followersArray.forEach(item => {
-      axios.get(`https://api.github.com/users/${item}`).then(res => {
-        console.log("second get", res);
-        cardsEntry.append(createCard(res.data));
-        // console.log("followers", followersArray);
-      });
-    });
+    cardsEntry.append(createCard(res.data));
   })
+  .then(
+    axios
+      .get(`https://api.github.com/users/${user}/following`)
+      .then(res => {
+        const data = res.data;
+        // console.log("data", data);
+        data.forEach(user => {
+          followersArray.push(user.login);
+          // console.log("followers", followersArray);
+        });
+        followersArray.forEach(item => {
+          axios.get(`https://api.github.com/users/${item}`).then(res => {
+            // console.log("second get", res);
+            cardsEntry.append(createCard(res.data));
+          });
+        });
+      })
+      .catch(err => {
+        console.log("error", err);
+      })
+  )
   .catch(err => {
     console.log("error", err);
   });
