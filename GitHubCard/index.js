@@ -2,6 +2,14 @@
            (replacing the palceholder with your Github name):
            https://api.github.com/users/<your name>
 */
+axios
+  .get("https://api.github.com/users/etriz")
+  .then(res => {
+    console.log(res.data);
+  })
+  .catch(err => {
+    console.log("error", err);
+  });
 
 /* Step 2: Inspect and study the data coming back, this is YOUR 
    github info! You will need to understand the structure of this 
@@ -53,3 +61,46 @@ const followersArray = [];
   luishrd
   bigknell
 */
+
+const createCard = ({ avatar_url, name, login, location, url, followers, following, bio }) => {
+  const card = document.createElement("div");
+  const userImg = document.createElement("img");
+  const cardInfo = document.createElement("div");
+  const userName = document.createElement("h3");
+  const userLogin = document.createElement("p");
+  const userLocation = document.createElement("p");
+  const profile = document.createElement("p");
+  const link = document.createElement("a");
+  const followerCount = document.createElement("p");
+  const followingCount = document.createElement("p");
+  const userBio = document.createElement("p");
+
+  card.append(userImg, cardInfo);
+  cardInfo.append(
+    userName,
+    userLogin,
+    userLocation,
+    profile,
+    followerCount,
+    followingCount,
+    userBio
+  );
+  profile.append(link);
+
+  card.classList.add("card");
+  cardInfo.classList.add("card-info");
+  userName.classList.add("name");
+  userLogin.classList.add("username");
+
+  userImg.src = avatar_url;
+  userName.textContent = name;
+  userLogin.textContent = login;
+  userLocation.textContent = location;
+  link.href = url;
+  link.textContent = url;
+  followerCount.textContent = followers;
+  followingCount.textContent = following;
+  userBio.textContent = bio;
+
+  return card;
+};
