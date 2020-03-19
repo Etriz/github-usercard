@@ -25,8 +25,6 @@
 */
 
 const followersArray = [];
-const namesArray = [];
-const testArray = [];
 
 /* Step 3: Create a function that accepts a single object as its only argument,
           Using DOM methods and properties, create a component that will return the following DOM element:
@@ -107,25 +105,14 @@ const getData = axios
     const data = res.data;
     // console.log("data", data);
     data.forEach(user => {
-      namesArray.push(user.login);
+      followersArray.push(user.login);
     });
-    // console.log("following", followingArray);
-  })
-  .then(() => {
-    namesArray.forEach(item => {
+    followersArray.forEach(item => {
       axios.get(`https://api.github.com/users/${item}`).then(res => {
-        const followData = res.data;
-        testArray.push(followData);
-        console.log(`test pushed`);
-        // console.log("followData", followData);
+        console.log("second get", res);
+        cardsEntry.append(createCard(res.data));
+        // console.log("followers", followersArray);
       });
-    });
-  })
-  .then(() => {
-    console.log("testArray", testArray);
-    testArray.forEach(test => {
-      cardsEntry.append(createCard(test));
-      console.log("test", test);
     });
   })
   .catch(err => {
