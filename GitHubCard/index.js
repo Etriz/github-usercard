@@ -53,3 +53,176 @@ const followersArray = [];
   luishrd
   bigknell
 */
+
+const createCard = ({
+  avatar_url,
+  name,
+  login,
+  location,
+  html_url,
+  followers,
+  following,
+  bio,
+  public_repos,
+  created_at,
+}) => {
+  // create elements
+  const card = document.createElement("div");
+  const userImg = document.createElement("img");
+  const cardInfo = document.createElement("div");
+  const userName = document.createElement("h3");
+  const userLogin = document.createElement("p");
+  const userLocation = document.createElement("p");
+  const profile = document.createElement("p");
+  const link = document.createElement("a");
+  const followerCount = document.createElement("p");
+  const followingCount = document.createElement("p");
+  const userBio = document.createElement("p");
+  const line = document.createElement("hr");
+  const moreBtn = document.createElement("p");
+  const moreDiv = document.createElement("div");
+  const hire = document.createElement("p");
+  const repos = document.createElement("p");
+  const since = document.createElement("p");
+  // append
+  card.append(userImg, cardInfo);
+  cardInfo.append(
+    userName,
+    userLogin,
+    userLocation,
+    profile,
+    followerCount,
+    followingCount,
+    userBio,
+    moreDiv,
+    line,
+    moreBtn
+  );
+  profile.append(link);
+  moreDiv.append(repos, since, hire);
+  // add class
+  card.classList.add("card");
+  cardInfo.classList.add("card-info");
+  userName.classList.add("name");
+  userLogin.classList.add("username");
+  // add attributes
+  userImg.src = avatar_url;
+  userName.textContent = name;
+  userLogin.textContent = login;
+  userLocation.textContent = `Location: ${location}`;
+  link.href = html_url;
+  link.textContent = html_url;
+  followerCount.textContent = `Followers: ${followers}`;
+  followingCount.textContent = `Following: ${following}`;
+  userBio.textContent = `Bio: ${bio}`;
+  moreBtn.textContent = "Load More";
+  moreBtn.style.textAlign = "center";
+  moreBtn.style.color = "gray";
+  moreBtn.style.cursor = "pointer";
+  let hireable = "yes" ? "Is available for hire" : "Is not looking for a job";
+  hire.textContent = hireable;
+  moreDiv.style.display = "none";
+  repos.textContent = `${public_repos} public repos`;
+  const date = new Date(created_at).toDateString();
+  since.textContent = `Member since ${date}`;
+
+  // event listeners
+  const expandCard = () => {
+    if (moreDiv.style.display === "none") {
+      moreDiv.style.display = "block";
+      moreBtn.textContent = "Load Less";
+    } else {
+      moreDiv.style.display = "none";
+      moreBtn.textContent = "Load More";
+    }
+  };
+  moreBtn.addEventListener("click", expandCard);
+  return card;
+};
+
+const addSearchForm = () => {
+  const formDiv = document.createElement("div");
+  const form = document.createElement("form");
+  const searchLabel = document.createElement("label");
+  const searchInput = document.createElement("input");
+  const searchButton = document.createElement("button");
+
+  // append
+  formDiv.append(form);
+  form.append(searchLabel, searchInput, searchButton);
+
+  // add class
+  formDiv.classList.add("form-div");
+
+  // styles
+  formDiv.style.width = "100%";
+  form.style.width = "100%";
+  form.style.display = "flex";
+  form.style.justifyContent = "justify";
+  form.style.marginBottom = "3rem";
+
+  searchLabel.textContent = "Find User:";
+  searchLabel.style.fontSize = "2.5rem";
+
+  searchInput.style.borderRadius = "5px";
+  searchInput.style.margin = "0 1rem";
+  searchInput.style.flexGrow = "1";
+
+  searchButton.textContent = "Search";
+  searchButton.style.borderRadius = "5px";
+
+  // add event listener
+  const findUser = () => {
+    event.preventDefault();
+    let user = searchInput.value;
+    getData(user);
+    searchInput.value = "";
+  };
+  searchButton.addEventListener("click", findUser);
+
+  return formDiv;
+};
+const header = document.querySelector(".header");
+header.after(addSearchForm());
+// let user = "";
+const defaultUser = "etriz";
+// const userSearch = user != "" ? user : defaultUser;
+const cardsEntry = document.querySelector(".cards");
+const getData = userSearch =>
+  axios
+    .get(`https://api.github.com/users/${userSearch}`)
+    .then(res => {
+      const line = document.createElement("div");
+      line.textContent = "is following";
+      line.style.textAlign = "center";
+      line.style.fontSize = "2rem";
+      line.style.marginBottom = document.querySelector("form").style.marginBottom;
+      while (cardsEntry.firstChild) cardsEntry.removeChild(cardsEntry.firstChild);
+      cardsEntry.append(createCard(res.data), line);
+    })
+    .then(
+      axios
+        .get(`https://api.github.com/users/${userSearch}/following`)
+        .then(res => {
+          const data = res.data;
+          // console.log("data", data);
+          followersArray.length = 0;
+          data.forEach(user => {
+            followersArray.push(user.login);
+            // console.log("followers", followersArray);
+          });
+          followersArray.forEach(item => {
+            axios.get(`https://api.github.com/users/${item}`).then(res => {
+              // console.log("second get", res);
+              cardsEntry.append(createCard(res.data));
+            });
+          });
+        })
+        .catch(err => {
+          console.log("error", err);
+        })
+    )
+    .catch(err => {
+      console.log("error", err);
+    });
+window.addEventListener("load", getData(defaultUser));
