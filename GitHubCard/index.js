@@ -54,7 +54,19 @@ const followersArray = [];
   bigknell
 */
 
-const createCard = ({ avatar_url, name, login, location, html_url, followers, following, bio }) => {
+const createCard = ({
+  avatar_url,
+  name,
+  login,
+  location,
+  html_url,
+  followers,
+  following,
+  bio,
+  public_repos,
+  created_at,
+}) => {
+  // create elements
   const card = document.createElement("div");
   const userImg = document.createElement("img");
   const cardInfo = document.createElement("div");
@@ -66,7 +78,13 @@ const createCard = ({ avatar_url, name, login, location, html_url, followers, fo
   const followerCount = document.createElement("p");
   const followingCount = document.createElement("p");
   const userBio = document.createElement("p");
-
+  const line = document.createElement("hr");
+  const moreBtn = document.createElement("p");
+  const moreDiv = document.createElement("div");
+  const hire = document.createElement("p");
+  const repos = document.createElement("p");
+  const since = document.createElement("p");
+  // append
   card.append(userImg, cardInfo);
   cardInfo.append(
     userName,
@@ -75,26 +93,50 @@ const createCard = ({ avatar_url, name, login, location, html_url, followers, fo
     profile,
     followerCount,
     followingCount,
-    userBio
+    userBio,
+    moreDiv,
+    line,
+    moreBtn
   );
   profile.append(link);
-
+  moreDiv.append(repos, since, hire);
+  // add class
   card.classList.add("card");
   cardInfo.classList.add("card-info");
   userName.classList.add("name");
   userLogin.classList.add("username");
-
+  // add attributes
   userImg.src = avatar_url;
   userName.textContent = name;
   userLogin.textContent = login;
   userLocation.textContent = `Location: ${location}`;
-  // profile.textContent = `Profile: `;
   link.href = html_url;
   link.textContent = html_url;
   followerCount.textContent = `Followers: ${followers}`;
   followingCount.textContent = `Following: ${following}`;
   userBio.textContent = `Bio: ${bio}`;
+  moreBtn.textContent = "Load More";
+  moreBtn.style.textAlign = "center";
+  moreBtn.style.color = "gray";
+  moreBtn.style.cursor = "pointer";
+  let hireable = "yes" ? "Is available for hire" : "Is not looking for a job";
+  hire.textContent = hireable;
+  moreDiv.style.display = "none";
+  repos.textContent = `${public_repos} public repos`;
+  const date = new Date(created_at).toDateString();
+  since.textContent = `Member since ${date}`;
 
+  // event listeners
+  const expandCard = () => {
+    if (moreDiv.style.display === "none") {
+      moreDiv.style.display = "block";
+      moreBtn.textContent = "Load Less";
+    } else {
+      moreDiv.style.display = "none";
+      moreBtn.textContent = "Load More";
+    }
+  };
+  moreBtn.addEventListener("click", expandCard);
   return card;
 };
 
@@ -150,7 +192,10 @@ const getData = userSearch =>
   axios
     .get(`https://api.github.com/users/${userSearch}`)
     .then(res => {
-      const line = document.createElement("hr");
+      const line = document.createElement("div");
+      line.textContent = "is following";
+      line.style.textAlign = "center";
+      line.style.fontSize = "2rem";
       line.style.marginBottom = document.querySelector("form").style.marginBottom;
       while (cardsEntry.firstChild) cardsEntry.removeChild(cardsEntry.firstChild);
       cardsEntry.append(createCard(res.data), line);
