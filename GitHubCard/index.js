@@ -98,34 +98,86 @@ const createCard = ({ avatar_url, name, login, location, html_url, followers, fo
   return card;
 };
 
-const user = "etriz";
+const addSearchForm = () => {
+  const formDiv = document.createElement("div");
+  const form = document.createElement("form");
+  const searchLabel = document.createElement("label");
+  const searchInput = document.createElement("input");
+  const searchButton = document.createElement("button");
+
+  // append
+  formDiv.append(form);
+  form.append(searchLabel, searchInput, searchButton);
+
+  // add class
+  formDiv.classList.add("form-div");
+
+  // styles
+  formDiv.style.width = "100%";
+  form.style.width = "100%";
+  form.style.display = "flex";
+  form.style.justifyContent = "justify";
+  form.style.marginBottom = "3rem";
+
+  searchLabel.textContent = "Find User:";
+  searchLabel.style.fontSize = "2.5rem";
+
+  searchInput.style.borderRadius = "5px";
+  searchInput.style.margin = "0 1rem";
+  searchInput.style.flexGrow = "1";
+
+  searchButton.textContent = "Search";
+  searchButton.style.borderRadius = "5px";
+
+  // add event listener
+  const findUser = () => {
+    event.preventDefault();
+    let user = searchInput.value;
+    getData(user);
+    searchInput.value = "";
+  };
+  searchButton.addEventListener("click", findUser);
+
+  return formDiv;
+};
+const header = document.querySelector(".header");
+header.after(addSearchForm());
+// let user = "";
+const defaultUser = "etriz";
+// const userSearch = user != "" ? user : defaultUser;
 const cardsEntry = document.querySelector(".cards");
-const getData = axios
-  .get(`https://api.github.com/users/${user}`)
-  .then(res => {
-    cardsEntry.append(createCard(res.data));
-  })
-  .then(
-    axios
-      .get(`https://api.github.com/users/${user}/following`)
-      .then(res => {
-        const data = res.data;
-        // console.log("data", data);
-        data.forEach(user => {
-          followersArray.push(user.login);
-          // console.log("followers", followersArray);
-        });
-        followersArray.forEach(item => {
-          axios.get(`https://api.github.com/users/${item}`).then(res => {
-            // console.log("second get", res);
-            cardsEntry.append(createCard(res.data));
+const getData = userSearch =>
+  axios
+    .get(`https://api.github.com/users/${userSearch}`)
+    .then(res => {
+      const line = document.createElement("hr");
+      line.style.marginBottom = document.querySelector("form").style.marginBottom;
+      while (cardsEntry.firstChild) cardsEntry.removeChild(cardsEntry.firstChild);
+      cardsEntry.append(createCard(res.data), line);
+    })
+    .then(
+      axios
+        .get(`https://api.github.com/users/${userSearch}/following`)
+        .then(res => {
+          const data = res.data;
+          // console.log("data", data);
+          followersArray.length = 0;
+          data.forEach(user => {
+            followersArray.push(user.login);
+            // console.log("followers", followersArray);
           });
-        });
-      })
-      .catch(err => {
-        console.log("error", err);
-      })
-  )
-  .catch(err => {
-    console.log("error", err);
-  });
+          followersArray.forEach(item => {
+            axios.get(`https://api.github.com/users/${item}`).then(res => {
+              // console.log("second get", res);
+              cardsEntry.append(createCard(res.data));
+            });
+          });
+        })
+        .catch(err => {
+          console.log("error", err);
+        })
+    )
+    .catch(err => {
+      console.log("error", err);
+    });
+window.addEventListener("load", getData(defaultUser));
